@@ -2,10 +2,7 @@ package com.sky.controller.admin;
 
 import com.github.xiaoymin.knife4j.annotations.ApiOperationSupport;
 import com.sky.constant.JwtClaimsConstant;
-import com.sky.dto.EmployeeDTO;
-import com.sky.dto.EmployeeLoginDTO;
-import com.sky.dto.EmployeePageQueryDTO;
-import com.sky.dto.SetmealDTO;
+import com.sky.dto.*;
 import com.sky.entity.Employee;
 import com.sky.properties.JwtProperties;
 import com.sky.result.PageResult;
@@ -46,5 +43,18 @@ public class SetmealController
     {
         setmealService.saveWithDish(setmealDTO);
         return Result.success();
+    }
+
+    /**
+     * 分页查询
+     * @param setmealPageQueryDTO
+     * @return
+     */
+    @GetMapping("/page")
+    @ApiOperation("分页查询")
+    public Result<PageResult> page(SetmealPageQueryDTO setmealPageQueryDTO)
+    {
+        PageResult pageResult = setmealService.pageQuery(setmealPageQueryDTO);
+        return Result.success(pageResult);
     }
 }
