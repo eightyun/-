@@ -6,3 +6,8 @@ sky:
     database: sky_take_out
     username: root
     password: '0000'     # 密码记得加‘’ 这就是字符串的含金量  我真是阐述你的梦
+  redis:
+    host: localhost
+    port: 6379
+    password: 0000
+    database: 0
