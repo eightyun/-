@@ -10,8 +10,10 @@ import com.hmdp.service.IVoucherOrderService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hmdp.service.IVoucherService;
 import com.hmdp.utils.RedisIdWorker;
+import com.hmdp.utils.SimpleRedisLock;
 import com.hmdp.utils.UserHolder;
 import org.springframework.aop.framework.AopContext;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +38,8 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
     @Resource
     private RedisIdWorker redisIdWorker;
 
+    @Resource
+    private StringRedisTemplate stringRedisTemplate ;
     @Override
     public Result seckillVoucher(Long voucherId)
     {
@@ -61,11 +65,26 @@ public class VoucherOrderServiceImpl extends ServiceImpl<VoucherOrderMapper, Vou
         }
 
         Long userId = UserHolder.getUser().getId();
-        synchronized (userId.toString().intern())
+
+        //创建锁对象 (给指针)
+        SimpleRedisLock lock = new SimpleRedisLock("order:" + userId, stringRedisTemplate);
+        // 获取锁
+        boolean islock = lock.tryLock(1000);
+        // 判断是否成功
+        if (!islock)
+        {
+            return Result.fail("一个用户只允许下一单") ;
+        }
+
+        try
         {
             // 获取代理对象
             IVoucherService proxy = (IVoucherService) AopContext.currentProxy();
             return proxy.createVoucherOrder(voucherId);
+        }
+        finally
+        {
+            lock.unlcok();
         }
     }
 
